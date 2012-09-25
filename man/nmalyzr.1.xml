@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"/usr/share/sgml/docbook/xml-dtd-4.4/docbookx.dtd" [
+<!--
+
+`xsltproc -''-nonet \
+          -''-param man.charmap.use.subset "0" \
+          -''-param make.year.ranges "1" \
+          -''-param make.single.year.ranges "1" \
+          /usr/share/xml/docbook/stylesheet/nwalsh/manpages/docbook.xsl \
+          manpage.xml'
+
+A manual page <package>.<section> will be generated. You may view the
+manual page with: nroff -man <package>.<section> | less'. A typical entry
+in a Makefile or Makefile.am is:
+
+DB2MAN = /usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
+XP     = xsltproc -''-nonet -''-param man.charmap.use.subset "0"
+
+manpage.1: manpage.xml
+        $(XP) $(DB2MAN) $<
+
+The xsltproc binary is found in the xsltproc package. The XSL files are in
+docbook-xsl. A description of the parameters you can use can be found in the
+docbook-xsl-doc-* packages. Please remember that if you create the nroff
+version in one of the debian/rules file targets (such as build), you will need
+to include xsltproc and docbook-xsl in your Build-Depends control field.
+Alternatively use the xmlto command/package. That will also automatically
+pull in xsltproc and docbook-xsl.
+
+Notes for using docbook2x: docbook2x-man does not automatically create the
+AUTHOR(S) and COPYRIGHT sections. In this case, please add them manually as
+<refsect1> ... </refsect1>.
+
+To disable the automatic creation of the AUTHOR(S) and COPYRIGHT sections
+read /usr/share/doc/docbook-xsl/doc/manpages/authors.html. This file can be
+found in the docbook-xsl-doc-html package.
+
+Validation can be done using: `xmllint -''-noout -''-valid manpage.xml`
+
+General documentation about man-pages and man-page-formatting:
+man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
+
+-->
+<!-- Fill in your name for FIRSTNAME and SURNAME. -->
+<!ENTITY dhfirstname "G&#252;nther">
+<!ENTITY dhsurname "Makulik">
+<!-- dhusername could also be set to "&firstname; &surname;". -->
+<!ENTITY dhusername "&dhfirstname; &dhsurname;">
+<!ENTITY dhemail "g-makulik@t-online.de">
+<!-- SECTION should be 1-8, maybe w/ subsection other parameters are
+       allowed: see man(7), man(1) and
+       http://www.tldp.org/HOWTO/Man-Page/q2.html. -->
+<!ENTITY dhsection "1">
+<!-- TITLE should be something like "User commands" or similar (see
+       http://www.tldp.org/HOWTO/Man-Page/q2.html). -->
+<!ENTITY dhtitle "nmalyzr User Manual">
+<!ENTITY dhucpackage "NMALYZR">
+<!ENTITY dhpackage "nmalyzr">
+]>
+<refentry>
+  <refentryinfo>
+    <title>&dhtitle;</title>
+
+    <productname>&dhpackage;</productname>
+
+    <authorgroup>
+      <author>
+        <firstname>&dhfirstname;</firstname>
+
+        <surname>&dhsurname;</surname>
+
+        <contrib>Wrote this manpage for linux systems.</contrib>
+
+        <address>
+          <email>&dhemail;</email>
+        </address>
+      </author>
+    </authorgroup>
+
+    <copyright>
+      <year>2012</year>
+
+      <holder>&dhusername;</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>This manual page was written for linux systems (but may be used by
+      others).</para>
+
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.3 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled "GNU
+      Free Documentation License".</para>
+    </legalnotice>
+  </refentryinfo>
+
+  <refmeta>
+    <refentrytitle>&dhucpackage;</refentrytitle>
+
+    <manvolnum>1</manvolnum>
+  </refmeta>
+
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>Tool for nm output size analysis</refpurpose>
+  </refnamediv>
+
+  <refsynopsisdiv>
+    <cmdsynopsis>
+      <command>&dhpackage;</command>
+
+      <arg choice="opt"><option>-o|--out-file &lt;file&gt;</option></arg>
+
+      <arg choice="opt"><option>-T|--text-input</option></arg>
+
+      <arg choice="opt"><option>-V|--verbose [0-3]</option></arg>
+
+      <arg choice="opt"><option>-E|--filter &lt;regexp&gt;</option></arg>
+
+      <arg choice="opt"><option>-S|--symbol-types &lt;st&gt;</option></arg>
+
+      <arg choice="opt"><option>--kb</option></arg>
+
+      <arg choice="opt"><option>-n|--ns &lt;namespace-list&gt;</option></arg>
+
+      <arg choice="opt"><option>-c|--class &lt;class-list&gt;</option></arg>
+
+      <arg choice="opt"><option>-N|--ns-summary</option></arg>
+
+      <arg choice="opt"><option>-C|--class-summary</option></arg>
+
+      <arg choice="opt"><option>-I|--show-internal-ns</option></arg>
+
+      <arg choice="opt"><option>--help</option></arg>
+
+      <arg choice="opt"><option>input-file ...</option></arg>
+    </cmdsynopsis>
+  </refsynopsisdiv>
+
+  <refsect1 id="description">
+    <title>DESCRIPTION</title>
+
+    <para><emphasis role="bold">&dhpackage;</emphasis> builds size summaries
+    for demangled C++ nm symbol information from executable, library, object,
+    or nm output format text files. A summary is build for all nm symbol types
+    found in the input. By default &dhpackage; takes one or more object,
+    library or executable input files, calls 'nm -C -S --size-sort' internally
+    and filters and analyzes the output directly.</para>
+
+    <para><emphasis role="bold">EXAMPLE:</emphasis></para>
+
+    <screen>$ nmalyzr a.out
+Summary by symbol type:
+==========================
+Type         Size #Symbols
+D         8409088        2
+d        12612104        3
+B        12632148        3
+t        29404076        7
+b        33686044        8
+I       105375800       25
+T       218400684       52
+i       231831388       55
+N       438154980      103</screen>
+
+    <para>Additionally symbols from the input can be filtered by certain
+    namespace or class symbol names.</para>
+
+    <para><emphasis role="bold">EXAMPLE:</emphasis></para>
+
+    <screen>$ nmalyzr -c "A&lt;int, std::vector&lt;int, std::allocator&lt;int&gt; &gt; &gt;" a.out
+Summary by symbol type:
+==========================
+Type         Size #Symbols
+T         8400916        2
+Class summaries:
+==============================================================================
+Type         Size Class
+T         8400916 'Ns1::Ns2::A&lt;int, std::vector&lt;int, std::allocator&lt;int&gt; &gt; &gt;'</screen>
+
+    <para><emphasis><emphasis role="bold">NOTE:</emphasis> The class name must
+    be specified as appearing in the demangled output, including any default
+    template parameters expanded by the compiler.</emphasis></para>
+
+    <para>If the input is provided through stdin, or the
+    <option>--text-input</option> option is specified the input must conform
+    the output produced by 'nm -C -S --size-sort'.</para>
+
+    <para>&dhpackage; declares certain 'internal' namespace names, that can be
+    used with the <option>--ns</option> option to match special symbols from
+    the input:</para>
+
+    <glosslist>
+      <glossentry>
+        <glossterm>&lt;linkmap&gt;</glossterm>
+
+        <glossdef>
+          <para>Matches symbols starting with '.'</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>&lt;sysinternal&gt;</glossterm>
+
+        <glossdef>
+          <para>Matches symbols starting with '__'</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>&lt;system&gt;</glossterm>
+
+        <glossdef>
+          <para>Matches symbols starting with '_'</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>&lt;global&gt;</glossterm>
+
+        <glossdef>
+          <para>Matches any other symbols that have no namespace or class
+          prefix</para>
+        </glossdef>
+      </glossentry>
+    </glosslist>
+  </refsect1>
+
+  <refsect1 id="options">
+    <title>OPTIONS</title>
+
+    <para>Analyze given nm demangled C++ output regarding size
+    information.</para>
+
+    <variablelist>
+      <!-- Use the variablelist.term.separator and the
+           variablelist.term.break.after parameters to
+           control the term elements. -->
+
+      <varlistentry>
+        <term><option>-o &lt;file&gt;</option></term>
+
+        <term><option>--out-file=&lt;file&gt;</option></term>
+
+        <listitem>
+          <para>Allows to specify an output filename, by default all output
+          will be written to stdout.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-T</option></term>
+
+        <term><option>--text-input</option></term>
+
+        <listitem>
+          <para>Input is processed from stdin or specified input files rather
+          than calling nm internally.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-V [0-3]</option></term>
+
+        <term><option>-verbose [=0-3]</option></term>
+
+        <listitem>
+          <para>Produces verbose output for the summaries. Levels are:</para>
+
+          <para>0 = Display no details on symbols</para>
+
+          <para>1 = Display all symbols considered from input</para>
+
+          <para>2 = Display all symbols considered for namespaces</para>
+
+          <para>3 = Display all symbols considered for classes</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-E &lt;regexp&gt;</option></term>
+
+        <term><option>--filter=&lt;regexp&gt;</option></term>
+
+        <listitem>
+          <para>Filters the input by &lt;regexp&gt; before analyzing.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-S &lt;st&gt;</option></term>
+
+        <term><option>--symbol-types=&lt;st&gt;</option></term>
+
+        <listitem>
+          <para>Filters the input by symbol types before analyzing. &lt;st&gt;
+          can contain one or more characters used as symbol types by
+          nm.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>--kb</option></term>
+
+        <listitem>
+          <para>Shows all sizes in kilobytes.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-n &lt;namespace-list&gt;</option></term>
+
+        <term><option>--ns=&lt;namespace-list&gt;</option></term>
+
+        <listitem>
+          <para>Filters the input to match at least one symbol from the given
+          &lt;namespace-list&gt; before analyzing, multiple namespaces are
+          separated using the ';' character.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-c &lt;class-list&gt;</option></term>
+
+        <term><option>--class=&lt;class-list&gt;</option></term>
+
+        <listitem>
+          <para>Filters the input to match at least one class symbol from the
+          given &lt;class-list&gt; before analyzing, multiple class symbols
+          are separated using the ';' character.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-N</option></term>
+
+        <term><option>--ns-summary</option></term>
+
+        <listitem>
+          <para>Shows a summary by namespace (automatically if --ns option is
+          used).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-C</option></term>
+
+        <term><option>--class-summary</option></term>
+
+        <listitem>
+          <para>Shows a summary by class (automatically if --class option is
+          used).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>-I</option></term>
+
+        <term><option>--show-internal-ns</option></term>
+
+        <listitem>
+          <para>Shows all internal namespaces.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><option>--help</option></term>
+
+        <listitem>
+          <para>Shows a help text.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </refsect1>
+
+  <refsect1 id="author">
+    <title>AUTHOR</title>
+
+    <para>The program was written by Günther Makulik (&dhemail;).</para>
+  </refsect1>
+
+  <!-- refsect1 id="copyright">
+    <title>copyright</title>
+    <para>Copyright (c) 2012 Günther Makulik</para>
+	<para>Permission is granted to copy, distribute and/or modify this document under the terms of the GNU 
+	      Free Documentation License, Version 1.3 or any later version published by the Free Software 
+	      Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no Back-Cover Texts.
+	      A copy of the license is included in the section entitled "GNU Free Documentation License".
+	</para>
+  </refsect1 -->
+
+  <refsect1 id="see_also">
+    <title>SEE ALSO</title>
+
+    <!-- In alpabetical order. -->
+
+    <para>nm(1)</para>
+  </refsect1>
+</refentry>

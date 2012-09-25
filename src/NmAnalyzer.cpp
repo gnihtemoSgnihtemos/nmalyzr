@@ -175,7 +175,7 @@ bool NmAnalyzer::readAllRecords()
 		if(foundNonInternalFilter)
 		{
 			filterExpr << "::.+";
-			//std::cout << "*** Namespace filter expression: '" << filterExpr.str() << "'" << std::endl;
+			// std::cout << "*** Namespace filter expression: '" << filterExpr.str() << "'" << std::endl;
 			regexNamespace = boost::regex(filterExpr.str());
 			namespaceFilter = true;
 		}
@@ -375,11 +375,7 @@ std::ostream& NmAnalyzer::printNamespaceSummaries(std::ostream& os)
 		std::map<char,std::map<std::string,SymbolTypeInfo> >::iterator foundEntry = namespaceSummaries.find(*it);
 		if(foundEntry != namespaceSummaries.end())
 		{
-			printSymbolTypeMap(os,foundEntry->second,true);
-			if(params.verbosityLevel >= 2)
-			{
-	//			printConsideredSymbols(os,it->first,it->second);
-			}
+			printSymbolTypeMap(os,foundEntry->second,true,(params.verbosityLevel >= 2));
 		}
 	}
 	return os;
@@ -421,11 +417,7 @@ std::ostream& NmAnalyzer::printClassSummaries(std::ostream& os)
 		std::map<char,std::map<std::string,SymbolTypeInfo> >::iterator foundEntry = classSummaries.find(*it);
 		if(foundEntry != classSummaries.end())
 		{
-			printSymbolTypeMap(os,foundEntry->second,true);
-			if(params.verbosityLevel >= 2)
-			{
-	//			printConsideredSymbols(os,it->first,it->second);
-			}
+			printSymbolTypeMap(os,foundEntry->second,true,(params.verbosityLevel >= 3));
 		}
 	}
 	return os;
@@ -538,19 +530,9 @@ std::string NmAnalyzer::extractClass(const std::string& symbol)
 	return cls;
 }
 
-std::ostream& NmAnalyzer::printSymbolTypeMap(std::ostream& os, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol)
+std::ostream& NmAnalyzer::printSymbolTypeMap(std::ostream& os, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol, bool verbose)
 {
 	std::vector<SymbolTypeInfo> symbolTypeInfos;
-//	for(std::set<char>::iterator it = allSymbolTypes.begin();
-//		it != allSymbolTypes.end();
-//		++it)
-//	{
-//		std::map<char,SymbolTypeInfo>::const_iterator foundSummary = symbolTypeMap.find(*it);
-//		if(foundSummary != symbolTypeMap.end())
-//		{
-//			symbolTypeInfos.push_back(foundSummary->second);
-//		}
-//	}
 	for(std::map<std::string,SymbolTypeInfo>::const_iterator it = symbolTypeMap.begin();
 		it != symbolTypeMap.end();
 		++it)
@@ -584,6 +566,10 @@ std::ostream& NmAnalyzer::printSymbolTypeMap(std::ostream& os, const std::map<st
 			os << " "
 			   << std::setw(8) << std::right << it->allSymbolNames.size()
 			   << std::endl;
+		}
+		if(verbose)
+		{
+			printConsideredSymbols(os,it->symbolType,it->symbol,*it);
 		}
 	}
 	return os;
@@ -665,34 +651,29 @@ std::string NmAnalyzer::buildNamespaceFromSymbolPath(const std::vector<std::stri
 	return "";
 }
 
-std::ostream& NmAnalyzer::printConsideredSymbols(std::ostream& os, const std::string& group, const std::map<char,SymbolTypeInfo>& symbolTypeMap)
+std::ostream& NmAnalyzer::printConsideredSymbols(std::ostream& os, char symbolType, const std::string& group, const SymbolTypeInfo& symbolTypeInfo)
 {
-	os << "Considered symbols for '" << group << "':" << std::endl
-	   << "------------------------------------------------------------------------------" << std::endl;
-	for(std::map<char,SymbolTypeInfo>::const_iterator it = symbolTypeMap.begin();
-		it != symbolTypeMap.end();
-		++it)
+	os << "Considered symbols for '" << symbolType << "/" << group << "':" << std::endl;
+	for(std::vector<std::string>::const_iterator symbolIt = symbolTypeInfo.allSymbolNames.begin();
+		symbolIt != symbolTypeInfo.allSymbolNames.end();
+		++symbolIt)
 	{
-		for(std::vector<std::string>::const_iterator symbolIt = it->second.allSymbolNames.begin();
-			symbolIt != it->second.allSymbolNames.end();
-			++symbolIt)
+		os << "      "
+		   << std::setw(11) << std::right;
+		std::map<std::pair<char,std::string>,NmRecord>::iterator foundSymbol = allSymbolInfos.find(std::make_pair(symbolType,*symbolIt));
+		if(foundSymbol != allSymbolInfos.end())
 		{
-			os << "       "
-			   << std::setw(11) << std::right;
-			std::map<std::pair<char,std::string>,NmRecord>::iterator foundSymbol = allSymbolInfos.find(std::make_pair(it->first,*symbolIt));
-			if(foundSymbol != allSymbolInfos.end())
+			if(params.showSizeInKB)
 			{
-				if(params.showSizeInKB)
-				{
-					os << std::fixed << std::setprecision(1) << (double)foundSymbol->second.symbolSize / 1024.0;
-				}
-				else
-				{
-					os << foundSymbol->second.symbolSize;
-				}
-				os << " " << *symbolIt << std::endl;
+				os << std::fixed << std::setprecision(1) << (double)foundSymbol->second.symbolSize / 1024.0;
 			}
+			else
+			{
+				os << foundSymbol->second.symbolSize;
+			}
+			os << " " << *symbolIt << std::endl;
 		}
 	}
+	os << "------------------------------------------------------------------------------" << std::endl;
 	return os;
 }

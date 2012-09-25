@@ -76,11 +76,11 @@ private:
 	std::ostream& printAllSymbols(std::ostream& os);
 	std::string extractNamespace(const std::string& symbol);
 	std::string extractClass(const std::string& symbol);
-	std::ostream& printSymbolTypeMap(std::ostream& os, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol = false);
+	std::ostream& printSymbolTypeMap(std::ostream& os, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol = false, bool verbose = false);
 	std::string stripBracketPair(char openingBracket,char closingBracket,const std::string& symbol, std::string& strippedPart);
 	bool isClass(const std::string& classSymbol);
 	std::string buildNamespaceFromSymbolPath(const std::vector<std::string>& symbolPathParts);
-	std::ostream& printConsideredSymbols(std::ostream& os, const std::string& group, const std::map<char,SymbolTypeInfo>& symbolTypeMap);
+	std::ostream& printConsideredSymbols(std::ostream& os, char symbolType, const std::string& group, const SymbolTypeInfo& symbolTypeInfo);
 
 	std::istream& input;
 	const NmAnalyzerParams& params;

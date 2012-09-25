@@ -165,12 +165,12 @@ bool NmAnalyzerParams::parseCmdLine(int argc, char** argv, NmAnalyzerParams& par
 	if(vm.count(OptNamespaceFilters))
 	{
 		std::vector<std::string> namespaceFilters;
-		boost::algorithm::split(namespaceFilters,vm[OptNamespaceFilters].as<std::string>(),boost::is_any_of(" ,"),boost::token_compress_on);
+		boost::algorithm::split(namespaceFilters,vm[OptNamespaceFilters].as<std::string>(),boost::is_any_of(";"),boost::token_compress_on);
 		for(std::vector<std::string>::iterator it = namespaceFilters.begin();
 			it != namespaceFilters.end();
 			++it)
 		{
-			if(params.namespaceFilters.find(*it) != params.namespaceFilters.end())
+			if(params.namespaceFilters.find(*it) == params.namespaceFilters.end())
 			{
 				params.namespaceFilters.insert(*it);
 			}
@@ -180,12 +180,12 @@ bool NmAnalyzerParams::parseCmdLine(int argc, char** argv, NmAnalyzerParams& par
 	if(vm.count(OptClassFilters))
 	{
 		std::vector<std::string> classFilters;
-		boost::algorithm::split(classFilters,vm[OptClassFilters].as<std::string>(),boost::is_any_of(" ,"),boost::token_compress_on);
+		boost::algorithm::split(classFilters,vm[OptClassFilters].as<std::string>(),boost::is_any_of(";"),boost::token_compress_on);
 		for(std::vector<std::string>::iterator it = classFilters.begin();
 			it != classFilters.end();
 			++it)
 		{
-			if(params.classFilters.find(*it) != params.classFilters.end())
+			if(params.classFilters.find(*it) == params.classFilters.end())
 			{
 				params.classFilters.insert(*it);
 			}
