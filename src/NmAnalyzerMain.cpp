@@ -29,7 +29,16 @@ int NmAnalyzerMain::run()
 		NmAnalyzer analyzer(ioProvider.getInputStream(),params);
 		if(analyzer.analyzeInputData())
 		{
-			analyzer.printResults(ioProvider.getOutputStream());
+			if(!params.quiet)
+			{
+				analyzer.printResults(ioProvider.getOutputStream());
+			}
+			if(!params.xmlOutputFilename.empty())
+			{
+				std::fstream xmlOutStream;
+				xmlOutStream.open(params.xmlOutputFilename.c_str(),std::ios_base::out);
+				analyzer.writeXmlResults(xmlOutStream);
+			}
 			return 0;
 		}
 	}

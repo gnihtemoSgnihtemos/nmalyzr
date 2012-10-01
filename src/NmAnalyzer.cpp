@@ -14,6 +14,15 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/find.hpp>
+#include "Poco/DOM/Document.h"
+#include "Poco/DOM/Element.h"
+#include "Poco/DOM/Text.h"
+#include "Poco/DOM/AutoPtr.h" //typedef to Poco::AutoPtr
+#include "Poco/DOM/DOMWriter.h"
+#include "Poco/XML/XMLWriter.h"
+#include "Poco/DOM/ProcessingInstruction.h"
+
+using namespace Poco::XML;
 
 #define InternalNsLinkmap "<linkmap>"
 #define InternalNsSysinternal "<sysinternal>"
@@ -128,6 +137,46 @@ std::ostream& NmAnalyzer::printResults(std::ostream& os)
 	{
 		printAllSymbols(os);
 	}
+	return os;
+}
+
+std::ostream& NmAnalyzer::writeXmlResults(std::ostream& os)
+{
+	AutoPtr<Document> pDoc = new Document;
+	AutoPtr<Element> pNsSummaries;
+
+	AutoPtr<ProcessingInstruction> pPi = pDoc->createProcessingInstruction("xml","version=\"1.0\" encoding=\"UTF-8\"");
+	pDoc->appendChild(pPi);
+	AutoPtr<Element> pRoot = pDoc->createElement("nmalyzr_results");
+	pDoc->appendChild(pRoot);
+
+	AutoPtr<Element> pSymbolTypeSummaries = pDoc->createElement("symboltype_summaries");
+	createXmlSymbolTypeSummaries(pDoc,pSymbolTypeSummaries);
+	pRoot->appendChild(pSymbolTypeSummaries);
+	if(params.showNamespaceSummary)
+	{
+		AutoPtr<Element> pNsSummaries = pDoc->createElement("namespace_summaries");
+		createXmlNamespaceSummaries(pDoc,pNsSummaries);
+		pRoot->appendChild(pNsSummaries);
+	}
+	if(params.showClassSummary)
+	{
+		AutoPtr<Element> pClassSummaries = pDoc->createElement("class_summaries");
+		createXmlClassSummaries(pDoc,pClassSummaries);
+		pRoot->appendChild(pClassSummaries);
+	}
+	if(params.verbosityLevel >= 1)
+	{
+		AutoPtr<Element> pAllSymbols = pDoc->createElement("all_symbols");
+		createXmlAllSymbols(pDoc,pAllSymbols);
+		pRoot->appendChild(pAllSymbols);
+	}
+
+	DOMWriter writer;
+	writer.setNewLine("\n");
+	writer.setOptions(XMLWriter::PRETTY_PRINT);
+	writer.writeNode(os, pDoc);
+
 	return os;
 }
 
@@ -316,6 +365,11 @@ std::ostream& NmAnalyzer::printSymbolTypeSummaries(std::ostream& os)
 	return printSymbolTypeMap(os,symbolTypeSummaries);
 }
 
+Poco::XML::Document* NmAnalyzer::createXmlSymbolTypeSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode)
+{
+	return createXmlSymbolTypeMap(doc,parentNode,symbolTypeSummaries);
+}
+
 void NmAnalyzer::buildNamespaceSummaries()
 {
 	for(std::vector<NmRecord>::iterator it = allRecords.begin();
@@ -381,6 +435,21 @@ std::ostream& NmAnalyzer::printNamespaceSummaries(std::ostream& os)
 	return os;
 }
 
+Poco::XML::Document* NmAnalyzer::createXmlNamespaceSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode)
+{
+	for(std::set<char>::iterator it = allSymbolTypes.begin();
+		it != allSymbolTypes.end();
+		++it)
+	{
+		std::map<char,std::map<std::string,SymbolTypeInfo> >::iterator foundEntry = namespaceSummaries.find(*it);
+		if(foundEntry != namespaceSummaries.end())
+		{
+			createXmlSymbolTypeMap(doc,parentNode,foundEntry->second,true,(params.verbosityLevel >= 2));
+		}
+	}
+	return doc;
+}
+
 void NmAnalyzer::buildClassSummaries()
 {
 	for(std::vector<NmRecord>::iterator it = allRecords.begin();
@@ -421,6 +490,21 @@ std::ostream& NmAnalyzer::printClassSummaries(std::ostream& os)
 		}
 	}
 	return os;
+}
+
+Poco::XML::Document* NmAnalyzer::createXmlClassSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode)
+{
+	for(std::set<char>::iterator it = allSymbolTypes.begin();
+		it != allSymbolTypes.end();
+		++it)
+	{
+		std::map<char,std::map<std::string,SymbolTypeInfo> >::iterator foundEntry = classSummaries.find(*it);
+		if(foundEntry != classSummaries.end())
+		{
+			createXmlSymbolTypeMap(doc,parentNode,foundEntry->second,true,(params.verbosityLevel >= 3));
+		}
+	}
+	return doc;
 }
 
 std::ostream& NmAnalyzer::printAllSymbols(std::ostream& os)
@@ -465,6 +549,45 @@ std::ostream& NmAnalyzer::printAllSymbols(std::ostream& os)
 	return os;
 }
 
+Poco::XML::Document* NmAnalyzer::createXmlAllSymbols(Poco::XML::Document* doc, Poco::XML::Element* parentNode)
+{
+	for(std::map<std::pair<char,std::string>,NmRecord>::iterator it = allSymbolInfos.begin();
+		it != allSymbolInfos.end();
+		++it)
+	{
+		AutoPtr<Element> pSymbolNode = doc->createElement("symbol");
+		std::ostringstream oss;
+		oss << it->second.symbolType;
+		pSymbolNode->setAttribute("type",oss.str());
+
+		oss.str("");
+		if(params.showSizeInKB)
+		{
+			oss << std::fixed << std::setprecision(1) << (double)it->second.symbolSize / 1024.0;
+		}
+		else
+		{
+			oss << it->second.symbolSize;
+		}
+		pSymbolNode->setAttribute("size",oss.str());
+
+		std::string cls = extractClass(it->first.second);
+
+		oss.str("");
+		if(!cls.empty())
+		{
+			oss << " class";
+		}
+		else
+		{
+			oss << " global";
+		}
+		pSymbolNode->setAttribute("category",oss.str());
+		pSymbolNode->setAttribute("name",it->first.second);
+		parentNode->appendChild(pSymbolNode);
+	}
+	return doc;
+}
 
 std::string NmAnalyzer::extractNamespace(const std::string& symbol)
 {
@@ -575,6 +698,59 @@ std::ostream& NmAnalyzer::printSymbolTypeMap(std::ostream& os, const std::map<st
 	return os;
 }
 
+Poco::XML::Document* NmAnalyzer::createXmlSymbolTypeMap(Poco::XML::Document* doc, Poco::XML::Element* parentNode, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol, bool verbose)
+{
+	std::vector<SymbolTypeInfo> symbolTypeInfos;
+	for(std::map<std::string,SymbolTypeInfo>::const_iterator it = symbolTypeMap.begin();
+		it != symbolTypeMap.end();
+		++it)
+	{
+		symbolTypeInfos.push_back(it->second);
+	}
+
+	std::sort(symbolTypeInfos.begin(),symbolTypeInfos.end(),SymbolTypeInfoSortBySize());
+	for(std::vector<SymbolTypeInfo>::iterator it = symbolTypeInfos.begin();
+		it != symbolTypeInfos.end();
+		++it)
+	{
+		AutoPtr<Element> pSummaryEntry = doc->createElement("summary_entry");
+		std::ostringstream oss;
+		oss << it->symbolType;
+		pSummaryEntry->setAttribute("type",oss.str());
+
+		oss.str("");
+		if(params.showSizeInKB)
+		{
+			oss << std::fixed << std::setprecision(1) << (double)it->totalSize / 1024.0;
+		}
+		else
+		{
+			oss << it->totalSize;
+		}
+		pSummaryEntry->setAttribute("size",oss.str());
+
+		oss.str("");
+		if(printSymbol)
+		{
+			oss << it->symbol;
+			pSummaryEntry->setAttribute("symbol",oss.str());
+		}
+		else
+		{
+			oss << it->allSymbolNames.size();
+			pSummaryEntry->setAttribute("nosymbols",oss.str());
+		}
+
+		oss.str("");
+		if(verbose)
+		{
+			createXmlConsideredSymbols(doc,pSummaryEntry,it->symbolType,it->symbol,*it);
+		}
+		parentNode->appendChild(pSummaryEntry);
+	}
+	return doc;
+}
+
 std::string NmAnalyzer::stripBracketPair(char openingBracket,char closingBracket,const std::string& symbol, std::string& strippedPart)
 {
 	std::string result = symbol;
@@ -676,4 +852,34 @@ std::ostream& NmAnalyzer::printConsideredSymbols(std::ostream& os, char symbolTy
 	}
 	os << "------------------------------------------------------------------------------" << std::endl;
 	return os;
+}
+
+Poco::XML::Document* NmAnalyzer::createXmlConsideredSymbols(Poco::XML::Document* doc, Poco::XML::Element* parentNode, char symbolType, const std::string& group, const SymbolTypeInfo& symbolTypeInfo)
+{
+	for(std::vector<std::string>::const_iterator symbolIt = symbolTypeInfo.allSymbolNames.begin();
+		symbolIt != symbolTypeInfo.allSymbolNames.end();
+		++symbolIt)
+	{
+		std::map<std::pair<char,std::string>,NmRecord>::iterator foundSymbol = allSymbolInfos.find(std::make_pair(symbolType,*symbolIt));
+		if(foundSymbol != allSymbolInfos.end())
+		{
+			AutoPtr<Element> pSymbol = doc->createElement("symbol");
+			std::ostringstream oss;
+			if(params.showSizeInKB)
+			{
+				oss << std::fixed << std::setprecision(1) << (double)foundSymbol->second.symbolSize / 1024.0;
+			}
+			else
+			{
+				oss << foundSymbol->second.symbolSize;
+			}
+			pSymbol->setAttribute("size",oss.str());
+
+			oss.str("");
+			oss << *symbolIt;
+			pSymbol->setAttribute("name",oss.str());
+			parentNode->appendChild(pSymbol);
+		}
+	}
+	return doc;
 }

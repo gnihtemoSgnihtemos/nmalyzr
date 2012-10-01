@@ -1,0 +1,15 @@
+====================
+nmalyzr installation
+====================
+
+Currently you can install nmalyzr from the source package using cmake.
+You'll need the cmake, a C++ compiler and the boost and poco libraries installed on your system.
+
+Unpack the source, change to the target directory and type
+$ cmake .
+-- Configuring done
+-- Generating done
+-- Build files have been written to: <target>/nmalyzr
+$ make
+...
+$ make install

@@ -15,6 +15,14 @@
 #include <cctype>
 #include "NmAnalyzerParams.h"
 
+namespace Poco
+{
+namespace XML
+{
+	class Element;
+	class Document;
+}
+}
 class NmAnalyzer
 {
 public:
@@ -23,6 +31,7 @@ public:
 
 	bool analyzeInputData();
 	std::ostream& printResults(std::ostream& os);
+	std::ostream& writeXmlResults(std::ostream& os);
 	static const std::vector<std::string>& getInternalNamespaces();
 private:
 	struct NmRecord
@@ -69,18 +78,24 @@ private:
 	bool readAllRecords();
 	void buildSymbolTypeSummaries();
 	std::ostream& printSymbolTypeSummaries(std::ostream& os);
+	Poco::XML::Document* createXmlSymbolTypeSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode);
 	void buildNamespaceSummaries();
 	std::ostream& printNamespaceSummaries(std::ostream& os);
+	Poco::XML::Document* createXmlNamespaceSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode);
 	void buildClassSummaries();
 	std::ostream& printClassSummaries(std::ostream& os);
+	Poco::XML::Document* createXmlClassSummaries(Poco::XML::Document* doc, Poco::XML::Element* parentNode);
 	std::ostream& printAllSymbols(std::ostream& os);
+	Poco::XML::Document* createXmlAllSymbols(Poco::XML::Document* doc, Poco::XML::Element* parentNode);
 	std::string extractNamespace(const std::string& symbol);
 	std::string extractClass(const std::string& symbol);
 	std::ostream& printSymbolTypeMap(std::ostream& os, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol = false, bool verbose = false);
+	Poco::XML::Document* createXmlSymbolTypeMap(Poco::XML::Document* doc, Poco::XML::Element* parentNode, const std::map<std::string,SymbolTypeInfo>& symbolTypeMap, bool printSymbol = false, bool verbose = false);
 	std::string stripBracketPair(char openingBracket,char closingBracket,const std::string& symbol, std::string& strippedPart);
 	bool isClass(const std::string& classSymbol);
 	std::string buildNamespaceFromSymbolPath(const std::vector<std::string>& symbolPathParts);
 	std::ostream& printConsideredSymbols(std::ostream& os, char symbolType, const std::string& group, const SymbolTypeInfo& symbolTypeInfo);
+	Poco::XML::Document* createXmlConsideredSymbols(Poco::XML::Document* doc, Poco::XML::Element* parentNode, char symbolType, const std::string& group, const SymbolTypeInfo& symbolTypeInfo);
 
 	std::istream& input;
 	const NmAnalyzerParams& params;

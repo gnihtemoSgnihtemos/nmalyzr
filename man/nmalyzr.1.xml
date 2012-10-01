@@ -135,6 +135,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
 
       <arg choice="opt"><option>-I|--show-internal-ns</option></arg>
 
+      <arg choice="opt"><option>--xml &lt;xml-output-file&gt;</option></arg>
+
+      <arg choice="opt"><option>--alt-nm-path &lt;nm-path&gt;</option></arg>
+
+      <arg choice="opt"><option>--quiet</option></arg>
+
       <arg choice="opt"><option>--help</option></arg>
 
       <arg choice="opt"><option>input-file ...</option></arg>
@@ -372,6 +378,30 @@ T         8400916 'Ns1::Ns2::A&lt;int, std::vector&lt;int, std::allocator&lt;int
 
         <listitem>
           <para>Shows a help text.</para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term><option>--xml=&lt;xml-output-filename&gt;</option></term>
+
+        <listitem>
+          <para>Provides results as XML output written to &lt;xml-output-filename&gt;.</para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term><option>--alt-nm-path=&lt;nm-path&gt;</option></term>
+
+        <listitem>
+          <para>Allows to specify an explicit path for the nm tool (e.g. for usage of cross-tool chains).</para>
+        </listitem>
+      </varlistentry>
+      
+      <varlistentry>
+        <term><option>--quiet</option></term>
+
+        <listitem>
+          <para>Suppresses any output to stdout.</para>
         </listitem>
       </varlistentry>
     </variablelist>

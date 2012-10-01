@@ -44,7 +44,15 @@ std::istream& NmIoProvider::getInputStream()
 	if(params.callNm && !nmStream.get())
 	{
 		std::ostringstream nmCommand;
-		nmCommand << "nm -C -S --size-sort";
+		if(params.alternateNmExec.empty())
+		{
+			nmCommand << "nm";
+		}
+		else
+		{
+			nmCommand << params.alternateNmExec;
+		}
+		nmCommand << " -C -S --size-sort";
 		for(std::vector<std::string>::const_iterator it = params.inputFileNames.begin();
 			it != params.inputFileNames.end();
 			++it)

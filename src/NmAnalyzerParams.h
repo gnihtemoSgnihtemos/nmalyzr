@@ -29,6 +29,9 @@ public:
 	, classFilters(rhs.classFilters)
 	, showNamespaceSummary(rhs.showNamespaceSummary)
 	, showClassSummary(rhs.showClassSummary)
+	, quiet(rhs.quiet)
+	, xmlOutputFilename(rhs.xmlOutputFilename)
+	, alternateNmExec(rhs.alternateNmExec)
 	{
 	}
 
@@ -47,6 +50,9 @@ public:
 		classFilters = rhs.classFilters;
 		showNamespaceSummary = rhs.showNamespaceSummary;
 		showClassSummary = rhs.showClassSummary;
+		quiet = rhs.quiet;
+		xmlOutputFilename = rhs.xmlOutputFilename;
+		alternateNmExec = rhs.alternateNmExec;
 		return *this;
 	};
 
@@ -63,6 +69,9 @@ public:
 	std::set<std::string> classFilters;
 	bool showNamespaceSummary;
 	bool showClassSummary;
+	bool quiet;
+	std::string xmlOutputFilename;
+	std::string alternateNmExec;
 
 	static bool parseCmdLine(int argc, char** argv, NmAnalyzerParams& params);
 private:
@@ -88,6 +97,9 @@ private:
 	, classFilters()
 	, showNamespaceSummary(argShowNamespaceSummary)
 	, showClassSummary(argShowClassSummary)
+	, quiet(false)
+	, xmlOutputFilename()
+	, alternateNmExec()
 	{
 	}
 

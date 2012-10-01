@@ -29,6 +29,9 @@ const NmAnalyzerParams NmAnalyzerParams::DefaultParams =
 #define OptShowNamespaceSummary "ns-summary"
 #define OptShowClassSummary "class-summary"
 #define OptShowInternalNs "show-internal-ns"
+#define OptQuiet "quiet"
+#define OptXmlOutputFilename "xml"
+#define OptAlternateNmExec "alt-nm-path"
 
 NmAnalyzerParams::NmAnalyzerParams()
 {
@@ -87,6 +90,9 @@ bool NmAnalyzerParams::parseCmdLine(int argc, char** argv, NmAnalyzerParams& par
 	    (OptShowNamespaceSummary ",N", "shows summary by namespace")
 	    (OptShowClassSummary ",C", "shows summary by class")
 	    (OptShowInternalNs ",I", "shows all internal namespaces")
+	    (OptQuiet ",Q", "suppresses output to stdout")
+	    (OptXmlOutputFilename, po::value<std::string>(), "specifies an XML output file for the results")
+	    (OptAlternateNmExec, po::value<std::string>(), "specifies an alternate nm executable to call")
 	;
 	po::options_description hidden("Hidden options");
 	hidden.add_options()
@@ -204,6 +210,18 @@ bool NmAnalyzerParams::parseCmdLine(int argc, char** argv, NmAnalyzerParams& par
 	{
 		const std::vector<std::string>& internal_namespaces = NmAnalyzer::getInternalNamespaces();
 	    params.namespaceFilters.insert(internal_namespaces.begin(),internal_namespaces.end());
+	}
+	if (vm.count(OptQuiet))
+	{
+	    params.quiet = true;
+	}
+	if (vm.count(OptXmlOutputFilename))
+	{
+	    params.xmlOutputFilename = vm[OptXmlOutputFilename].as<std::string>();
+	}
+	if (vm.count(OptAlternateNmExec))
+	{
+	    params.alternateNmExec = vm[OptAlternateNmExec].as<std::string>();
 	}
 
 	return true;

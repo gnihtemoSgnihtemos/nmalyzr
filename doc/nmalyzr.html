@@ -1,0 +1,45 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>NMALYZR</title><meta name="generator" content="DocBook XSL Stylesheets V1.77.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="refentry"><a name="idp737888"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>nmalyzr &#8212; Tool for nm output size analysis</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">nmalyzr</code>  [<code class="option">-o|--out-file &lt;file&gt;</code>] [<code class="option">-T|--text-input</code>] [<code class="option">-V|--verbose [0-3]</code>] [<code class="option">-E|--filter &lt;regexp&gt;</code>] [<code class="option">-S|--symbol-types &lt;st&gt;</code>] [<code class="option">--kb</code>] [<code class="option">-n|--ns &lt;namespace-list&gt;</code>] [<code class="option">-c|--class &lt;class-list&gt;</code>] [<code class="option">-N|--ns-summary</code>] [<code class="option">-C|--class-summary</code>] [<code class="option">-I|--show-internal-ns</code>] [<code class="option">--xml &lt;xml-output-file&gt;</code>] [<code class="option">--alt-nm-path &lt;nm-path&gt;</code>] [<code class="option">--quiet</code>] [<code class="option">--help</code>] [<code class="option">input-file ...</code>]</p></div></div><div class="refsect1"><a name="description"></a><h2>DESCRIPTION</h2><p><span class="bold"><strong>nmalyzr</strong></span> builds size summaries
+    for demangled C++ nm symbol information from executable, library, object,
+    or nm output format text files. A summary is build for all nm symbol types
+    found in the input. By default nmalyzr takes one or more object,
+    library or executable input files, calls 'nm -C -S --size-sort' internally
+    and filters and analyzes the output directly.</p><p><span class="bold"><strong>EXAMPLE:</strong></span></p><pre class="screen">$ nmalyzr a.out
+Summary by symbol type:
+==========================
+Type         Size #Symbols
+D         8409088        2
+d        12612104        3
+B        12632148        3
+t        29404076        7
+b        33686044        8
+I       105375800       25
+T       218400684       52
+i       231831388       55
+N       438154980      103</pre><p>Additionally symbols from the input can be filtered by certain
+    namespace or class symbol names.</p><p><span class="bold"><strong>EXAMPLE:</strong></span></p><pre class="screen">$ nmalyzr -c "A&lt;int, std::vector&lt;int, std::allocator&lt;int&gt; &gt; &gt;" a.out
+Summary by symbol type:
+==========================
+Type         Size #Symbols
+T         8400916        2
+Class summaries:
+==============================================================================
+Type         Size Class
+T         8400916 'Ns1::Ns2::A&lt;int, std::vector&lt;int, std::allocator&lt;int&gt; &gt; &gt;'</pre><p><span class="emphasis"><em><span class="bold"><strong>NOTE:</strong></span> The class name must
+    be specified as appearing in the demangled output, including any default
+    template parameters expanded by the compiler.</em></span></p><p>If the input is provided through stdin, or the
+    <code class="option">--text-input</code> option is specified the input must conform
+    the output produced by 'nm -C -S --size-sort'.</p><p>nmalyzr declares certain 'internal' namespace names, that can be
+    used with the <code class="option">--ns</code> option to match special symbols from
+    the input:</p><div class="glosslist"><dl><dt>&lt;linkmap&gt;</dt><dd><p>Matches symbols starting with '.'</p></dd><dt>&lt;sysinternal&gt;</dt><dd><p>Matches symbols starting with '__'</p></dd><dt>&lt;system&gt;</dt><dd><p>Matches symbols starting with '_'</p></dd><dt>&lt;global&gt;</dt><dd><p>Matches any other symbols that have no namespace or class
+          prefix</p></dd></dl></div></div><div class="refsect1"><a name="options"></a><h2>OPTIONS</h2><p>Analyze given nm demangled C++ output regarding size
+    information.</p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="option">-o &lt;file&gt;</code> <br></span><span class="term"><code class="option">--out-file=&lt;file&gt;</code></span></dt><dd><p>Allows to specify an output filename, by default all output
+          will be written to stdout.</p></dd><dt><span class="term"><code class="option">-T</code> <br></span><span class="term"><code class="option">--text-input</code></span></dt><dd><p>Input is processed from stdin or specified input files rather
+          than calling nm internally.</p></dd><dt><span class="term"><code class="option">-V [0-3]</code> <br></span><span class="term"><code class="option">-verbose [=0-3]</code></span></dt><dd><p>Produces verbose output for the summaries. Levels are:</p><p>0 = Display no details on symbols</p><p>1 = Display all symbols considered from input</p><p>2 = Display all symbols considered for namespaces</p><p>3 = Display all symbols considered for classes</p></dd><dt><span class="term"><code class="option">-E &lt;regexp&gt;</code> <br></span><span class="term"><code class="option">--filter=&lt;regexp&gt;</code></span></dt><dd><p>Filters the input by &lt;regexp&gt; before analyzing.</p></dd><dt><span class="term"><code class="option">-S &lt;st&gt;</code> <br></span><span class="term"><code class="option">--symbol-types=&lt;st&gt;</code></span></dt><dd><p>Filters the input by symbol types before analyzing. &lt;st&gt;
+          can contain one or more characters used as symbol types by
+          nm.</p></dd><dt><span class="term"><code class="option">--kb</code></span></dt><dd><p>Shows all sizes in kilobytes.</p></dd><dt><span class="term"><code class="option">-n &lt;namespace-list&gt;</code> <br></span><span class="term"><code class="option">--ns=&lt;namespace-list&gt;</code></span></dt><dd><p>Filters the input to match at least one symbol from the given
+          &lt;namespace-list&gt; before analyzing, multiple namespaces are
+          separated using the ';' character.</p></dd><dt><span class="term"><code class="option">-c &lt;class-list&gt;</code> <br></span><span class="term"><code class="option">--class=&lt;class-list&gt;</code></span></dt><dd><p>Filters the input to match at least one class symbol from the
+          given &lt;class-list&gt; before analyzing, multiple class symbols
+          are separated using the ';' character.</p></dd><dt><span class="term"><code class="option">-N</code> <br></span><span class="term"><code class="option">--ns-summary</code></span></dt><dd><p>Shows a summary by namespace (automatically if --ns option is
+          used).</p></dd><dt><span class="term"><code class="option">-C</code> <br></span><span class="term"><code class="option">--class-summary</code></span></dt><dd><p>Shows a summary by class (automatically if --class option is
+          used).</p></dd><dt><span class="term"><code class="option">-I</code> <br></span><span class="term"><code class="option">--show-internal-ns</code></span></dt><dd><p>Shows all internal namespaces.</p></dd><dt><span class="term"><code class="option">--help</code></span></dt><dd><p>Shows a help text.</p></dd><dt><span class="term"><code class="option">--xml=&lt;xml-output-filename&gt;</code></span></dt><dd><p>Provides results as XML output written to &lt;xml-output-filename&gt;.</p></dd><dt><span class="term"><code class="option">--alt-nm-path=&lt;nm-path&gt;</code></span></dt><dd><p>Allows to specify an explicit path for the nm tool (e.g. for usage of cross-tool chains).</p></dd><dt><span class="term"><code class="option">--quiet</code></span></dt><dd><p>Suppresses any output to stdout.</p></dd></dl></div></div><div class="refsect1"><a name="author"></a><h2>AUTHOR</h2><p>The program was written by Günther Makulik (g-makulik@t-online.de).</p></div><div class="refsect1"><a name="see_also"></a><h2>SEE ALSO</h2><p>nm(1)</p></div></div></body></html>
